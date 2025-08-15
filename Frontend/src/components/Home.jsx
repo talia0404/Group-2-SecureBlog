@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
 
-export default function Dashboard() {
+export default function Hone() {
   const [me, setMe] = useState(null);
   const [err, setErr] = useState("");
 
@@ -11,7 +11,7 @@ export default function Dashboard() {
       {me ? (
         <pre>{JSON.stringify(me, null, 2)}</pre>
       ) : (
-        <p>Loading your info...</p>
+        <p>Register or Log in</p>
       )}
     </div>
   );
