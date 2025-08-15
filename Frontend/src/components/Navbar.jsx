@@ -1,24 +1,51 @@
-import React from "react";
-import { Link } from "react-router-dom";
+// src/components/Navbar.jsx
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import "./Navbar.css";
 
-const Navbar = () => {
-  return (
-    <nav className="navbar">
-      <h2 className="logo">Secure Blog</h2>
-      <ul>
-        <li>
-          <Link to="/">Home</Link>
-        </li>
-        <li>
-          <Link to="/login">Login</Link>
-        </li>
-        <li>
-          <Link to="/register">Register</Link>
-        </li>
-      </ul>
-    </nav>
-  );
-};
+export default function Navbar() {
+  const [authed, setAuthed] = useState(!!localStorage.getItem("token"));
+  const navigate = useNavigate();
+  const location = useLocation();
 
-export default Navbar;
+  // Re-check auth whenever the route changes
+  useEffect(() => {
+    setAuthed(!!localStorage.getItem("token"));
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setAuthed(false);
+    navigate("/login", { replace: true });
+  };
+
+  return (
+    <>
+      <nav className="navbar">
+        <div className="logo">SecureBlog</div>
+
+        <ul>
+
+          {authed ? (
+            <>
+              <li><NavLink to="/dashboard">Dashboard</NavLink></li>
+              <li>
+                <button className="logout-link" type="button" onClick={handleLogout}>
+                  Logout
+                </button>
+              </li>
+            </>
+          ) : (
+            <>
+              <li><NavLink to="/register">Register</NavLink></li>
+              <li><NavLink to="/login">Login</NavLink></li>
+            </>
+          )}
+        </ul>
+      </nav>
+
+      {/* spacer so fixed navbar doesn't cover your content */}
+      <div className="navbar-spacer" />
+    </>
+  );
+}

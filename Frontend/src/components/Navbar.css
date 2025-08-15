@@ -1,13 +1,15 @@
 .navbar {
+  position: fixed;
+  top: 0;              /* ensure it sticks at the top */
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  position: fixed;
-  padding-left: 10px;
-  padding-right: 10px;
-  z-index: 1000;
-  background-color: #ffffff;
+  padding: 12px 10px;  /* give it some height */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .navbar .logo {
@@ -20,15 +22,38 @@
   list-style: none;
   display: flex;
   gap: 15px;
+  margin: 0;          /* reset default ul spacing */
+  padding: 0;
+  align-items: center;
 }
 
 .navbar ul li a {
   color: #333;
   text-decoration: none;
   padding-right: 30px;
-  align-items: center;
 }
 
-.navbar ul li a:hover {
+.navbar ul li a:hover,
+.navbar ul li a.active {       /* NavLink adds .active */
   text-decoration: underline;
+}
+
+/* Make the logout button look like a link */
+.logout-link {
+  background: none;
+  border: none;
+  color: #333;
+  padding-right: 30px;
+  cursor: pointer;
+  font: inherit;               /* match font to links */
+  text-decoration: none;
+}
+
+.logout-link:hover {
+  text-decoration: underline;
+}
+
+/* Spacer to prevent content being hidden under fixed navbar */
+.navbar-spacer {
+  height: 56px;                /* match your navbar’s visual height */
 }
