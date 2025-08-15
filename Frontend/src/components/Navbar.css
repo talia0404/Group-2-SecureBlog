@@ -1,0 +1,34 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: fixed;
+  padding-left: 10px;
+  padding-right: 10px;
+  z-index: 1000;
+  background-color: #ffffff;
+}
+
+.navbar .logo {
+  color: #333;
+  font-size: 1.5rem;
+  padding-left: 20px;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+}
+
+.navbar ul li a {
+  color: #333;
+  text-decoration: none;
+  padding-right: 30px;
+  align-items: center;
+}
+
+.navbar ul li a:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,52 @@
+/* Container for the entire registration form */
+.register-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 80px;
+  background-color: #ffffff; /* Light pink background */
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  
+}
+
+/* Heading style inside the form container */
+.register-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Style for the form itself */
+.register-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Style for each input field */
+.register-container input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #ffffff;
+  color: #333;
+}
+
+/* Style for the submit/register button */
+.register-container button {
+  padding: 10px;
+  background-color: #333;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Hover effect for the button */
+.register-container button:hover {
+  background-color: #e3b4ff;
+}
