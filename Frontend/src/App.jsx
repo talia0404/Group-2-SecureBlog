@@ -3,6 +3,8 @@ import Register from "./components/Register";
 import Login from "./components/Login"; 
 import Navbar from "./components/Navbar";
 import Logout from "./components/Logout"
+import ProtectedRoute from "./components/ProtectedRoute";
+import DashboardPage from "./components/Dashboard"; // <- create this
 
 function App() {
   return (
