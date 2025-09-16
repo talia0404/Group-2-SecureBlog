@@ -1,44 +1,64 @@
-// Import mongoose to define the schema and interact with MongoDB
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
-// Import bcrypt to hash and compare passwords securely
-const bcrypt = require("bcryptjs");
+// email: unique login identifier (not username) -> enforce uniqueness
+// password: NEVER store plain text; will be hashed pre-save
+// role: limits what a user can do; enforce enum so only valid roles are stored
 
-// Define the schema for User documents in MongoDB
-const userSchema = new mongoose.Schema({
-  email: { 
-    type: String,       // Field type: String
-    unique: true,       // No two users can have the same email
-    required: true      // Must be provided
+const ROLE_VALUES = ['admin', 'editor', 'author', 'reader'];
+
+const userSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,          // enforces one account per email at DB level
+      lowercase: true,       // emails are case-insensitive in practice
+      trim: true,
+      // optional extra validation for safety:
+      match: [/^\S+@\S+\.\S+$/, 'Invalid email format'],
+      index: true,           // faster lookups on login (findOne by email)
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 8,          // basic password strength baseline
+      // we store the HASH here, not the plain password
+    },
+    role: {
+      type: String,
+      enum: ROLE_VALUES,     // prevent invalid roles
+      default: 'reader',     // least privilege by default
+      index: true,
+    },
   },
-  password: { 
-    type: String,       // Field type: String
-    required: true      // Must be provided
-  }
+  { timestamps: true }
+);
+
+// storing the password in json
+// when sending user objects to clients, do NOT leak the hash
+userSchema.set('toJSON', {
+  transform: function (_doc, ret) {
+    delete ret.password;
+    return ret;
+  },
 });
 
-// runs before a user is saved to the databasr
-userSchema.pre("save", async function (next) {
-  // If the password wasn't changed, skip hashing
-  if (!this.isModified("password")) return next();
-
-  // generate a salt with 10 rounds - more rounds = more secure but slower
-  // what's a salt?
-  const salt = await bcrypt.genSalt(10);
-
-  // Hash the password with the salt and store the hashed value
+// hash password before saving 
+// even if DB is breached, hashes + salt protect users
+// hash only when password is created/changed
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next(); // no re-hash if unchanged
+  const saltRounds = 12; // WHY: good balance security/speed for servers
+  const salt = await bcrypt.genSalt(saltRounds);
   this.password = await bcrypt.hash(this.password, salt);
-
-  // Continue with the save operation
   next();
 });
 
-// compares a plain password with the hashed password in DB
+// compare candidate password at login
+// we need a safe way to verify user-provided password vs stored hash
 userSchema.methods.comparePassword = function (candidatePassword) {
-  // Returns true or false based on whether passwords match
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Export the model so it can be used elsewhere in the app
-// This creates a 'users' collection in MongoDB
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model('User', userSchema);

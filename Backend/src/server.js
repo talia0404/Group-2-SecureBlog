@@ -8,6 +8,11 @@ const mongoose = require('mongoose');
 const path = require('path');
 const app = require('./app'); // <-- app should apply helmet/csp, cors, parsers, routes, errors
 
+//  Route inspector
+const listEndpoints = require("express-list-endpoints");
+console.log("Registered routes:");
+console.table(listEndpoints(app));
+
 const PORT = process.env.PORT || 5000;
 
 // Accept either MONGO_URI or MONGODB_URI to avoid naming mismatches
@@ -49,12 +54,7 @@ if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
       console.log(`Server running at ${protoLabel}://localhost:${PORT}`);
     });
   } catch (err) {
-    // Typical SRV/DNS issues show up as ENOTFOUND; surface the message clearly
     console.error('MongoDB connection error:', err && err.message ? err.message : err);
     process.exit(1);
   }
-})();  
-
-
-
-
+})();
