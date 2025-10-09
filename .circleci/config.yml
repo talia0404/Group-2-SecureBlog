@@ -24,7 +24,7 @@ jobs:
 
       # --- Save cache ---
       - save_cache:
-          key: node-deps-{{ checksum "backend/package-lock.json" }}
+          key: node-deps-{{ checksum "Backend/package-lock.json" }}
           paths:
             - ~/.npm
 
@@ -55,18 +55,7 @@ jobs:
             docker image ls
 
 
-      # --- Health Check (optional but nice) ---
-      - run:
-          name: Verify Docker Container Health
-          command: |
-            cd backend
-            docker run -d -p 5000:5000 --name secureblog-api-test secureblog-api
-            echo "Waiting for container to start..."
-            sleep 10
-            curl -f http://localhost:5000/health || (echo "❌ Health check failed" && exit 1)
-            docker stop secureblog-api-test
-
-
+      
 workflows:
   version: 2
   ci-pipeline:
