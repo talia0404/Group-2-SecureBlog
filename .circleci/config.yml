@@ -3,11 +3,11 @@ version: 2.1
 jobs:
   build-and-test:
     docker:
-      - image: cimg/node:22.8  # ✅ Node 22 LTS CircleCI image
+      - image: cimg/node:22.8  # ✅ Node 22 LTS image
     steps:
       - checkout
 
-      # --- Show repo structure for clarity ---
+      # --- Show project structure ---
       - run:
           name: Show repo structure
           command: |
@@ -16,7 +16,7 @@ jobs:
             echo "---- Backend dir ----"
             ls -la Backend || true
 
-      # --- Install dependencies (include dev for Jest, ESLint, etc.) ---
+      # --- Restore & Install Dependencies (include dev) ---
       - restore_cache:
           keys:
             - node-deps-{{ checksum "Backend/package-lock.json" }}
@@ -29,26 +29,27 @@ jobs:
           paths:
             - ~/.npm
 
-      # --- Verify Jest is installed ---
+      # --- Verify Jest is Installed ---
       - run:
           name: Verify Jest Installation
           command: |
             cd Backend
-            npx jest --version || echo "Jest not found"
+            npx jest --version || echo "⚠️ Jest not found"
 
-      # --- Lint the project ---
+      # --- Run ESLint ---
       - run:
           name: Run ESLint
           command: cd Backend && npx eslint . --ext .js,.jsx,.ts,.tsx || true
 
-      # --- Run Jest tests ---
+      # --- Run Jest Tests (no config path issues) ---
       - run:
           name: Run Jest Tests
           command: |
             cd Backend
-            NODE_ENV=test npx jest --config jest.config.cjs --runInBand --ci --reporters=default
+            echo "Running Jest from:" && pwd
+            NODE_ENV=test npx jest --runInBand --ci --reporters=default
 
-      # --- Build Docker image ---
+      # --- Docker Setup & Build ---
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
@@ -58,7 +59,7 @@ jobs:
             docker build -t secureblog-api .
             docker image ls
 
-      # --- Optional: Check if Docker image has a HEALTHCHECK ---
+      # --- Optional: Check for HEALTHCHECK in Dockerfile ---
       - run:
           name: Verify HEALTHCHECK (optional)
           command: |
