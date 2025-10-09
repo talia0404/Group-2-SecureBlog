@@ -14,6 +14,9 @@ console.log("Registered routes:");
 console.table(listEndpoints(app));
 
 const PORT = process.env.PORT || 5000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`API on :${PORT}`);
+});
 
 // Accept either MONGO_URI or MONGODB_URI to avoid naming mismatches
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
@@ -58,3 +61,4 @@ if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
     process.exit(1);
   }
 })();
+

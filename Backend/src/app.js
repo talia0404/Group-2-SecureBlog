@@ -11,7 +11,7 @@ const { protect } = require("./middleware/authMiddleware");
 dotenv.config();
 const app = express();
 
-// 🔑 real client IPs when behind a proxy/load balancer (Render/Heroku/Nginx)
+// real client IPs when behind a proxy/load balancer (Render/Heroku/Nginx)
 app.set("trust proxy", 1);
 
 configureSecurity(app);
@@ -84,6 +84,9 @@ app.get("/__routes", (req, res) => {
   }
 });
 
-
+//  Health check
+app.get("/health", (req, res) => {
+  res.status(200).json({ ok: true });
+});
 
 module.exports = app;

@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /usr/src/app
+
+# Install deps first for better caching
+COPY package*.json ./
+RUN npm ci
+
+# Bring in source
+COPY . .
+
+EXPOSE 3000
+
+# nodemon is already in devDeps; compose will run `npm run dev`
+CMD ["npm", "run", "dev"]
+
+HEALTHCHECK --interval=5s --timeout=2s --retries=12 CMD wget -qO- http://127.0.0.1:${PORT:-5000}/health || exit 1
