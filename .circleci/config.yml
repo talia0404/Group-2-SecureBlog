@@ -3,11 +3,10 @@ version: 2.1
 jobs:
   build-and-test:
     docker:
-      - image: cimg/node:22.8  # ✅ Node 22 LTS image
+      - image: cimg/node:22.8
     steps:
       - checkout
 
-      # --- Show project structure ---
       - run:
           name: Show repo structure
           command: |
@@ -16,7 +15,7 @@ jobs:
             echo "---- Backend dir ----"
             ls -la Backend || true
 
-      # --- Restore & Install Dependencies (include dev for Jest, ESLint, etc.) ---
+      # Dependencies (include dev for jest/eslint)
       - restore_cache:
           keys:
             - node-deps-{{ checksum "Backend/package-lock.json" }}
@@ -29,37 +28,28 @@ jobs:
           paths:
             - ~/.npm
 
-      # --- Verify Jest Installation ---
-      - run:
-          name: Verify Jest Installation
-          command: |
-            cd Backend
-            npx jest --version || echo "⚠️ Jest not found"
-
-      # --- Lint the project ---
       - run:
           name: Run ESLint
           command: cd Backend && npx eslint . --ext .js,.jsx,.ts,.tsx || true
 
-      # --- Run Jest Tests (will not fail if no tests exist) ---
       - run:
-          name: Run Jest Tests
+          name: Run Jest Tests (pass if no tests yet)
           command: |
             cd Backend
-            echo "Running Jest from:" && pwd
             NODE_ENV=test npx jest --runInBand --ci --reporters=default --passWithNoTests
 
-      # --- Docker Setup & Build ---
+      # Build Docker image using Dockerfile.dev
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Build Docker Image
+          name: Build Docker Image (Dockerfile.dev)
           command: |
             cd Backend
-            docker build -t secureblog-api .
+            test -f Dockerfile.dev || (echo "Dockerfile.dev not found" && exit 1)
+            docker build -f Dockerfile.dev -t secureblog-api .
             docker image ls
 
-      # --- Optional: Check for HEALTHCHECK in Dockerfile ---
+      # Optional: check HEALTHCHECK
       - run:
           name: Verify HEALTHCHECK (optional)
           command: |
