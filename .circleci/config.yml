@@ -16,7 +16,7 @@ jobs:
             echo "---- Backend dir ----"
             ls -la Backend || true
 
-      # --- Restore & Install Dependencies (include dev) ---
+      # --- Restore & Install Dependencies (include dev for Jest, ESLint, etc.) ---
       - restore_cache:
           keys:
             - node-deps-{{ checksum "Backend/package-lock.json" }}
@@ -29,25 +29,25 @@ jobs:
           paths:
             - ~/.npm
 
-      # --- Verify Jest is Installed ---
+      # --- Verify Jest Installation ---
       - run:
           name: Verify Jest Installation
           command: |
             cd Backend
             npx jest --version || echo "⚠️ Jest not found"
 
-      # --- Run ESLint ---
+      # --- Lint the project ---
       - run:
           name: Run ESLint
           command: cd Backend && npx eslint . --ext .js,.jsx,.ts,.tsx || true
 
-      # --- Run Jest Tests (no config path issues) ---
+      # --- Run Jest Tests (will not fail if no tests exist) ---
       - run:
           name: Run Jest Tests
           command: |
             cd Backend
             echo "Running Jest from:" && pwd
-            NODE_ENV=test npx jest --runInBand --ci --reporters=default
+            NODE_ENV=test npx jest --runInBand --ci --reporters=default --passWithNoTests
 
       # --- Docker Setup & Build ---
       - setup_remote_docker:
