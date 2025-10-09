@@ -1,26 +1,31 @@
 version: 2.1
 
-
 jobs:
   build-and-test:
     docker:
-      - image: cimg/node:22.8  # ✅ Node 22 LTS environment
+      - image: cimg/node:22.8  # Node 22 LTS image
     steps:
       - checkout
 
+      # --- Show folder structure (helpful for debugging if needed) ---
+      - run:
+          name: Show repo structure
+          command: |
+            pwd
+            ls -la
+            echo "---- Backend dir ----"
+            ls -la Backend || true
 
-      # --- Restore cache for backend dependencies ---
+      # --- Restore cache ---
       - restore_cache:
           keys:
             - node-deps-{{ checksum "Backend/package-lock.json" }}
             - node-deps-
 
-
-      # --- Install Dependencies ---
+      # --- Install dependencies ---
       - run:
           name: Install Dependencies
-          command: cd backend && npm ci
-
+          command: cd Backend && npm ci
 
       # --- Save cache ---
       - save_cache:
@@ -28,40 +33,40 @@ jobs:
           paths:
             - ~/.npm
 
-
-      # --- Lint Code ---
+      # --- Lint code ---
       - run:
           name: Run ESLint
-          command: cd backend && npx eslint . --ext .js,.jsx,.ts,.tsx || true
+          command: cd Backend && npx eslint . --ext .js,.jsx,.ts,.tsx || true
 
-
-      # --- Run Tests ---
+      # --- Run tests ---
       - run:
           name: Run Jest Tests
-          command: cd backend && npm test -- --ci --reporters=default
+          command: cd Backend && npm test -- --ci --reporters=default
 
-
-      # --- Docker Setup ---
+      # --- Build Docker image ---
       - setup_remote_docker:
           docker_layer_caching: true
-
-
-      # --- Build Docker Image ---
       - run:
           name: Build Docker Image
           command: |
-            cd backend
+            cd Backend
             docker build -t secureblog-api .
             docker image ls
 
+      # --- Optional health check ---
+      - run:
+          name: Verify Docker Container Health
+          command: |
+            cd Backend
+            docker run -d -p 5000:5000 --name secureblog-api-test secureblog-api
+            echo "Waiting for container..."
+            sleep 10
+            curl -f http://localhost:5000/health || (echo " Health check failed" && exit 1)
+            docker stop secureblog-api-test
 
-      
 workflows:
   version: 2
   ci-pipeline:
     jobs:
       - build-and-test
-
-
-
 
