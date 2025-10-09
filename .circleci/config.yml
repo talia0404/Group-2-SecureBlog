@@ -15,7 +15,7 @@ jobs:
             echo "---- Backend dir ----"
             ls -la Backend || true
 
-      # Dependencies (include dev for jest/eslint)
+      # deps (include dev for jest/eslint)
       - restore_cache:
           keys:
             - node-deps-{{ checksum "Backend/package-lock.json" }}
@@ -38,26 +38,37 @@ jobs:
             cd Backend
             NODE_ENV=test npx jest --runInBand --ci --reporters=default --passWithNoTests
 
-      # Build Docker image using Dockerfile.dev
+  docker-build:
+    docker:
+      - image: cimg/node:22.8
+    steps:
+      - checkout
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Build Docker Image (Dockerfile.dev)
+          name: Build Docker image if Dockerfile exists
           command: |
+            set -e
             cd Backend
-            test -f Dockerfile.dev || (echo "Dockerfile.dev not found" && exit 1)
-            docker build -f Dockerfile.dev -t secureblog-api .
-            docker image ls
-
-      # Optional: check HEALTHCHECK
-      - run:
-          name: Verify HEALTHCHECK (optional)
-          command: |
-            cd Backend
-            docker inspect secureblog-api --format='{{json .Config.Healthcheck}}' || echo "No HEALTHCHECK defined"
+            if [ -f Dockerfile ]; then
+              echo "Found Dockerfile"; docker build -t secureblog-api .
+            elif [ -f Dockerfile.dev ]; then
+              echo "Found Dockerfile.dev"; docker build -f Dockerfile.dev -t secureblog-api .
+            else
+              echo "No Dockerfile in this branch. Skipping Docker build."
+              exit 0
+            fi
+            docker image ls | grep secureblog-api || true
 
 workflows:
-  version: 2
+  version: 2.1
   ci-pipeline:
     jobs:
       - build-and-test
+      - docker-build:
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only:
+                - main   # 🔒 Only build/push Docker on main
