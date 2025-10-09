@@ -1,5 +1,6 @@
 version: 2.1
 
+
 jobs:
   build-and-test:
     docker:
@@ -7,16 +8,19 @@ jobs:
     steps:
       - checkout
 
+
       # --- Restore cache for backend dependencies ---
       - restore_cache:
           keys:
-            - node-deps-{{ checksum "backend/package-lock.json" }}
+            - node-deps-{{ checksum "Backend/package-lock.json" }}
             - node-deps-
+
 
       # --- Install Dependencies ---
       - run:
           name: Install Dependencies
           command: cd backend && npm ci
+
 
       # --- Save cache ---
       - save_cache:
@@ -24,19 +28,23 @@ jobs:
           paths:
             - ~/.npm
 
+
       # --- Lint Code ---
       - run:
           name: Run ESLint
           command: cd backend && npx eslint . --ext .js,.jsx,.ts,.tsx || true
+
 
       # --- Run Tests ---
       - run:
           name: Run Jest Tests
           command: cd backend && npm test -- --ci --reporters=default
 
+
       # --- Docker Setup ---
       - setup_remote_docker:
           docker_layer_caching: true
+
 
       # --- Build Docker Image ---
       - run:
@@ -45,6 +53,7 @@ jobs:
             cd backend
             docker build -t secureblog-api .
             docker image ls
+
 
       # --- Health Check (optional but nice) ---
       - run:
@@ -57,8 +66,13 @@ jobs:
             curl -f http://localhost:5000/health || (echo "❌ Health check failed" && exit 1)
             docker stop secureblog-api-test
 
+
 workflows:
   version: 2
   ci-pipeline:
     jobs:
       - build-and-test
+
+
+
+
