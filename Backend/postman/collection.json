@@ -1,0 +1,119 @@
+{
+  "info": {
+    "name": "SecureBlog API Tests",
+    "_postman_id": "e2e-secureblog-tests",
+    "description": "Automated API test collection for SecureBlog. Validates registration, login, and authentication flow under HTTPS.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "PROTOCOL", "value": "https" },
+    { "key": "HOST", "value": "localhost:3000" },
+    { "key": "TEST_PASSWORD", "value": "Password123" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{PROTOCOL}}://{{HOST}}/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('API is healthy', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user945@example.com\",\n  \"password\": \"{{TEST_PASSWORD}}\"\n}"
+        },
+        "url": "{{PROTOCOL}}://{{HOST}}/api/auth/register-user"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('User registered successfully', function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login User",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user945@example.com\",\n  \"password\": \"{{TEST_PASSWORD}}\"\n}"
+        },
+        "url": "{{PROTOCOL}}://{{HOST}}/api/auth/login"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Login successful', function () {",
+              "  pm.response.to.have.status(200);",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.token, 'token should exist').to.exist;",
+              "  pm.environment.set('authToken', data.token);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Who Am I (Auth Check)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": \"token\", \"value\": \"{{authToken}}\", \"type\": \"string\" }]
+        },
+        "method": "GET",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{PROTOCOL}}://{{HOST}}/api/auth/whoami"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Authenticated user retrieved', function () {",
+              "  pm.response.to.have.status(200);",
+              "  const data = pm.response.json();",
+              "  pm.expect(data.email).to.eql('user945@example.com');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{authToken}}", "type": "string" }]
+  }
+}
